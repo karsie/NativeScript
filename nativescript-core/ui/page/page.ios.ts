@@ -78,12 +78,20 @@ class UIViewControllerImpl extends UIViewController {
         return controller;
     }
 
+    get preferredStatusBarStyle(): UIStatusBarStyle {
+        const owner = this._owner.get();
+        if (owner) {
+            return owner.statusBarStyle === "dark" ? UIStatusBarStyle.Default : UIStatusBarStyle.LightContent;
+        }
+    }
+
     public viewDidLoad(): void {
         super.viewDidLoad();
 
         // Unify translucent and opaque bars layout
         // this.edgesForExtendedLayout = UIRectEdgeBottom;
         this.extendedLayoutIncludesOpaqueBars = true;
+        this.setNeedsStatusBarAppearanceUpdate();
     }
 
     public viewWillAppear(animated: boolean): void {
@@ -340,20 +348,6 @@ export class Page extends PageBase {
         }
     }
 
-    public updateStatusBar() {
-        this._updateStatusBarStyle(this.statusBarStyle);
-    }
-
-    public _updateStatusBarStyle(value?: string) {
-        const frame = this.frame;
-        if (this.frame && value) {
-            const navigationController: UINavigationController = frame.ios.controller;
-            const navigationBar = navigationController.navigationBar;
-
-            navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
-        }
-    }
-
     public _updateEnableSwipeBackNavigation(enabled: boolean) {
         const navController = this._ios.navigationController;
         if (this.frame && navController && navController.interactivePopGestureRecognizer) {
@@ -467,19 +461,8 @@ export class Page extends PageBase {
         }
     }
 
-    [statusBarStyleProperty.getDefault](): UIBarStyle {
-        return UIBarStyle.Default;
-    }
-    [statusBarStyleProperty.setNative](value: string | UIBarStyle) {
-        const frame = this.frame;
-        if (frame) {
-            const navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
-            if (typeof value === "string") {
-                navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
-            } else {
-                navigationBar.barStyle = value;
-            }
-        }
+    [statusBarStyleProperty.getDefault](): UIStatusBarStyle {
+        return UIStatusBarStyle.Default;
     }
 }
 
